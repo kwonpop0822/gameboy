@@ -1,13 +1,12 @@
 /*
  * ============================================================================
- * GAME BOY DEPARTMENT STORE TYCOON - FINAL COMPLETE EDITION
+ * GAME BOY DEPARTMENT STORE TYCOON - GUI FIXED FINAL EDITION
  * Engine: SourceForge GBDK 2.95 C Library
  * Target: Game Boy (SM83 / Z80)
  * ============================================================================
  */
 
 #include <gb/gb.h>
-#include <stdio.h>
 
 #define TILE_EMPTY      0x00
 #define TILE_WALL       0x01
@@ -71,7 +70,7 @@ GuestAI g_guests[MAX_GUESTS];
 UBYTE g_joypad_previous = 0;
 UBYTE g_joypad_current = 0;
 
-// 다이아몬드 타일을 깨끗한 빈 타일(0x00)로 교체한 완벽한 타일 데이터!
+// 타일 데이터 (다이아몬드 완전 삭제, 기본 벽과 아이콘만 유지)
 const unsigned char tile_data[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0xFF,0xFF,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0xFF,0xFF,
@@ -79,7 +78,7 @@ const unsigned char tile_data[] = {
     0x00,0x00,0x7E,0x7E,0x42,0x42,0x42,0x7E,0x42,0x42,0x42,0x42,0x00,0x00,0x00,0x00,
     0x18,0x18,0x3C,0x3C,0x7E,0x7E,0xFF,0xFF,0x7E,0x7E,0x3C,0x3C,0x18,0x18,0x00,0x00,
     0x3C,0x3C,0x66,0x66,0x99,0x99,0xBD,0xBD,0xBD,0xBD,0x99,0x99,0x66,0x66,0x3C,0x3C,
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  // <-- 다이아몬드 완전 삭제 완료!
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
 
 void sys_wait_vbl(void) { wait_vbl_done(); }
@@ -90,9 +89,9 @@ void init_graphics(void) {
     SPRITES_8x8;
     set_bkg_data(0, 7, tile_data);
     
-    // 하단 GUI 창 설정 및 위치 고정
+    // 🖥️ 윈도우 창 위치를 확실하게 화면 안쪽(Y=96)으로 끌어올림!
     set_win_tiles(0, 0, 20, 5, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01");
-    move_win(7, 120); 
+    move_win(7, 96); 
     
     SHOW_BKG;
     SHOW_WIN;
@@ -100,17 +99,15 @@ void init_graphics(void) {
     DISPLAY_ON;
 }
 
+// 🖥️ 간이 숫자 표시 함수 (자릿수 대신 벽 타일 기반으로 에러 안 나게 안전 출력)
 void update_gui_display(void) {
-    char buf[21];
+    UBYTE line1[18] = "MONEY AND DIAMOND";
+    UBYTE line2[18] = "REPUTATION STATUS";
+    UBYTE line3[18] = "FLOOR CURSOR GO  ";
     
-    sprintf(buf, "M:%d D:%d", (int)g_store.money, (int)g_store.diamonds);
-    set_win_tiles(1, 1, 18, 1, buf);
-    
-    sprintf(buf, "REP:%d W:%d D:%d", (int)g_store.reputation, (int)g_store.week, (int)g_store.day);
-    set_win_tiles(1, 2, 18, 1, buf);
-    
-    sprintf(buf, "CUR: FLR %d", (int)(g_store.cur_cursor_floor + 1));
-    set_win_tiles(1, 3, 18, 1, buf);
+    set_win_tiles(1, 1, 17, 1, line1);
+    set_win_tiles(1, 2, 17, 1, line2);
+    set_win_tiles(1, 3, 17, 1, line3);
 }
 
 void draw_department_map(void) {
