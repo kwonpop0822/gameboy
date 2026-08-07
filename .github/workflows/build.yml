@@ -1,4 +1,4 @@
-name: Build Game Boy ROM
+name: Build Game Boy ROM with Docker
 
 on:
   push:
@@ -9,15 +9,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 공식 GBDK-2020 도커 이미지를 컨테이너로 직접 통째로 띄운다!!
+    container:
+      image: ghcr.io/gbdk-2020/gbdk-2020:latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Setup GBDK-2020
-      uses: gbdk-2020/gbdk-action@v3
-
-    - name: Build ROM
+    - name: Build ROM inside Docker Container
       run: |
         make clean || true
         make
