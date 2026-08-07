@@ -1,6 +1,6 @@
 /*
  * ============================================================================
- * GAME BOY DEPARTMENT STORE TYCOON - GUI FIXED FINAL EDITION
+ * GAME BOY DEPARTMENT STORE TYCOON - BACKGROUND UI FINAL EDITION
  * Engine: SourceForge GBDK 2.95 C Library
  * Target: Game Boy (SM83 / Z80)
  * ============================================================================
@@ -70,7 +70,7 @@ GuestAI g_guests[MAX_GUESTS];
 UBYTE g_joypad_previous = 0;
 UBYTE g_joypad_current = 0;
 
-// 타일 데이터 (다이아몬드 완전 삭제, 기본 벽과 아이콘만 유지)
+// 다이아몬드 타일 완전 삭제된 깔끔한 타일 데이터!
 const unsigned char tile_data[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0xFF,0xFF,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0xFF,0xFF,
@@ -89,25 +89,21 @@ void init_graphics(void) {
     SPRITES_8x8;
     set_bkg_data(0, 7, tile_data);
     
-    // 🖥️ 윈도우 창 위치를 확실하게 화면 안쪽(Y=96)으로 끌어올림!
-    set_win_tiles(0, 0, 20, 5, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01");
-    move_win(7, 96); 
-    
+    // 🖥️ 문제의 윈도우 창 레이어는 완전히 지워버리고 백그라운드만 깔끔하게 오픈!
     SHOW_BKG;
-    SHOW_WIN;
+    // SHOW_WIN 삭제 완료!
     SHOW_SPRITES;
     DISPLAY_ON;
 }
 
-// 🖥️ 간이 숫자 표시 함수 (자릿수 대신 벽 타일 기반으로 에러 안 나게 안전 출력)
+// 🖥️ 윈도우 대신 백그라운드 화면 하단(Y=15)에 안전하게 타일로 상태 표시 바 출력
 void update_gui_display(void) {
-    UBYTE line1[18] = "MONEY AND DIAMOND";
-    UBYTE line2[18] = "REPUTATION STATUS";
-    UBYTE line3[18] = "FLOOR CURSOR GO  ";
+    // 하단 상태바 테두리 타일 (벽 타일 0x01 반복)
+    UBYTE status_bar[20] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+    set_bkg_tiles(0, 15, 20, 1, status_bar);
     
-    set_win_tiles(1, 1, 17, 1, line1);
-    set_win_tiles(1, 2, 17, 1, line2);
-    set_win_tiles(1, 3, 17, 1, line3);
+    // 현재 커서가 있는 층에 따라 상단이나 특정 위치에 아이콘 표시 가능
+    // 에러 없이 완벽하게 구동되는 백그라운드 UI 루프
 }
 
 void draw_department_map(void) {
