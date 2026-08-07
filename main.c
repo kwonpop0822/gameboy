@@ -1,12 +1,14 @@
+
 /*
  * ============================================================================
- * GAME BOY DEPARTMENT STORE TYCOON (300+ LINES FULL C SOURCE CODE)
+ * GAME BOY DEPARTMENT STORE TYCOON - FULL GUI & MEGA EDITION
  * Engine: SourceForge GBDK 2.95 C Library
  * Target: Game Boy (SM83 / Z80)
  * ============================================================================
  */
 
 #include <gb/gb.h>
+#include <stdio.h>
 
 #define TILE_EMPTY      0x00
 #define TILE_WALL       0x01
@@ -48,6 +50,7 @@ typedef struct {
 typedef struct {
     UWORD money;
     UWORD reputation;
+    UWORD diamonds;
     UBYTE day;
     UBYTE week;
     UWORD weekly_tax;
@@ -56,7 +59,7 @@ typedef struct {
 } DepartmentStore;
 
 DepartmentStore g_store = {
-    3000, 80, 1, 1, 600, 0,
+    3000, 80, 5, 1, 1, 600, 0,
     {
         {0, 1, 500,  120, 0, 100},
         {1, 0, 1200, 280, 0, 80},
@@ -86,9 +89,32 @@ void update_inputs(void) { g_joypad_previous = g_joypad_current; g_joypad_curren
 void init_graphics(void) {
     SPRITES_8x8;
     set_bkg_data(0, 7, tile_data);
+    
+    // 🖥️ 하단 상태창 GUI를 위한 윈도우 설정 (화면 아래쪽에 배치)
+    set_win_tiles(0, 0, 20, 5, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01");
+    move_win(7, 112); // 화면 하단에 윈도우 고정
+    
     SHOW_BKG;
+    SHOW_WIN;  // 윈도우 GUI 활성화!
     SHOW_SPRITES;
     DISPLAY_ON;
+}
+
+// 🖥️ 화면 하단 GUI에 실시간 데이터 텍스트 출력 함수
+void update_gui_display(void) {
+    char buf[21];
+    
+    // 1줄차: 돈과 다이아몬드 표시
+    sprintf(buf, "M:%d D:%d", (int)g_store.money, (int)g_store.diamonds);
+    set_win_tiles(1, 1, 18, 1, buf);
+    
+    // 2줄차: 평판과 현재 일차 표시
+    sprintf(buf, "REP:%d W:%d D:%d", (int)g_store.reputation, (int)g_store.week, (int)g_store.day);
+    set_win_tiles(1, 2, 18, 1, buf);
+    
+    // 3줄차: 현재 커서 위치한 층 정보 표시
+    sprintf(buf, "CUR: FLR %d", (int)(g_store.cur_cursor_floor + 1));
+    set_win_tiles(1, 3, 18, 1, buf);
 }
 
 void draw_department_map(void) {
@@ -150,7 +176,10 @@ void process_guest_ai(GuestAI* guest) {
         UBYTE f = guest->target_floor;
         if (g_store.floors[f].level > 0 && !g_store.floors[f].is_on_fire) {
             UWORD revenue = g_store.floors[f].base_income * g_store.floors[f].level;
-            if (guest->is_vip) revenue *= 3;
+            if (guest->is_vip) {
+                revenue *= 3;
+                g_store.diamonds += 1;
+            }
             g_store.money += revenue;
             if (g_store.reputation < 100) g_store.reputation++;
         } else {
@@ -171,6 +200,13 @@ void upgrade_selected_floor(void) {
         g_store.money -= required;
         g_store.floors[f].level++;
         draw_department_map();
+    }
+}
+
+void use_diamond_boost(void) {
+    if (g_store.diamonds >= 3) {
+        g_store.diamonds -= 3;
+        g_store.money += 2000;
     }
 }
 
@@ -212,6 +248,13 @@ void handle_player_controls(void) {
     if (is_button_pressed(J_DOWN)) { if (g_store.cur_cursor_floor > 0) g_store.cur_cursor_floor--; }
     if (is_button_pressed(J_A)) upgrade_selected_floor();
     if (is_button_pressed(J_B)) extinguish_disaster();
+    
+    if (is_button_pressed(J_SELECT)) {
+        use_diamond_boost();
+    }
+    if (is_button_pressed(J_START)) {
+        g_store.diamonds += 5;
+    }
 }
 
 void main(void) {
@@ -223,10 +266,16 @@ void main(void) {
     while (1) {
         system_timer++;
         handle_player_controls();
+        
         if (system_timer % 90 == 0) spawn_guest();
         for (i = 0; i < MAX_GUESTS; i++) process_guest_ai(&g_guests[i]);
         if (system_timer % 600 == 0) if ((DIV_REG % 3) == 0) trigger_random_disaster();
         if (system_timer % 360 == 0) process_calendar_and_taxes();
+        
+        // 매 프레임마다 하단 GUI 텍스트 업데이트!
+        update_gui_display();
+        
         sys_wait_vbl();
     }
 }
+
