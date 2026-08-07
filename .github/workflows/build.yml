@@ -14,22 +14,13 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install GBDK-2020 Dependencies & Tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y make wget unzip
+    - name: Setup GBDK-2020
+      uses: gbdk-2020/gbdk-action@v3
 
-    - name: Download and Setup GBDK-2020
-      run: |
-        wget https://github.com/gbdk-2020/gbdk-2020/releases/download/4.3.0/gbdk-linux64.tar.gz
-        tar -xzf gbdk-linux64.tar.gz
-        echo "$PWD/gbdk/bin" >> $GITHUB_PATH
-
-    - name: Build ROM with LCC
+    - name: Build ROM
       run: |
         make clean || true
-        # GBDK-2020의 lcc 컴파일러를 사용해 게임보이 롬(.gb)으로 다이렉트 빌드!
-        lcc -Wa-l -Wp-lib -msm83:gb -o tycoon.gb main.c
+        make
 
     - name: Upload ROM Artifact
       uses: actions/upload-artifact@v4
