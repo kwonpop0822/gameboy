@@ -12,12 +12,12 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install SDCC and Make
       run: |
         sudo apt-get update
-        sudo apt-get install -y sdcc make gbdk
+        sudo apt-get install -y sdcc make
 
     - name: Build ROM
       run: |
@@ -25,7 +25,7 @@ jobs:
         make
 
     - name: Upload ROM Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tycoon-rom
         path: tycoon.gb
