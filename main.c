@@ -46,7 +46,7 @@ typedef struct {
 } GuestAI;
 
 typedef struct {
-    ULONG money;
+    UWORD money;
     UWORD reputation;
     UBYTE day;
     UBYTE week;
