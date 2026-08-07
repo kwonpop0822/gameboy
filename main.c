@@ -1,7 +1,6 @@
-
 /*
  * ============================================================================
- * GAME BOY DEPARTMENT STORE TYCOON - FULL GUI & MEGA EDITION
+ * GAME BOY DEPARTMENT STORE TYCOON - FINAL COMPLETE EDITION
  * Engine: SourceForge GBDK 2.95 C Library
  * Target: Game Boy (SM83 / Z80)
  * ============================================================================
@@ -72,6 +71,7 @@ GuestAI g_guests[MAX_GUESTS];
 UBYTE g_joypad_previous = 0;
 UBYTE g_joypad_current = 0;
 
+// 다이아몬드 타일을 깨끗한 빈 타일(0x00)로 교체한 완벽한 타일 데이터!
 const unsigned char tile_data[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0xFF,0xFF,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0xFF,0xFF,
@@ -79,7 +79,7 @@ const unsigned char tile_data[] = {
     0x00,0x00,0x7E,0x7E,0x42,0x42,0x42,0x7E,0x42,0x42,0x42,0x42,0x00,0x00,0x00,0x00,
     0x18,0x18,0x3C,0x3C,0x7E,0x7E,0xFF,0xFF,0x7E,0x7E,0x3C,0x3C,0x18,0x18,0x00,0x00,
     0x3C,0x3C,0x66,0x66,0x99,0x99,0xBD,0xBD,0xBD,0xBD,0x99,0x99,0x66,0x66,0x3C,0x3C,
-    0xFF,0xFF,0xC3,0xC3,0xA5,0xA5,0x99,0x99,0x99,0x99,0xA5,0xA5,0xC3,0xC3,0xFF,0xFF
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  // <-- 다이아몬드 완전 삭제 완료!
 };
 
 void sys_wait_vbl(void) { wait_vbl_done(); }
@@ -90,29 +90,25 @@ void init_graphics(void) {
     SPRITES_8x8;
     set_bkg_data(0, 7, tile_data);
     
-    // 🖥️ 하단 상태창 GUI를 위한 윈도우 설정 (화면 아래쪽에 배치)
+    // 하단 GUI 창 설정 및 위치 고정
     set_win_tiles(0, 0, 20, 5, "\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01");
-    move_win(7, 112); // 화면 하단에 윈도우 고정
+    move_win(7, 120); 
     
     SHOW_BKG;
-    SHOW_WIN;  // 윈도우 GUI 활성화!
+    SHOW_WIN;
     SHOW_SPRITES;
     DISPLAY_ON;
 }
 
-// 🖥️ 화면 하단 GUI에 실시간 데이터 텍스트 출력 함수
 void update_gui_display(void) {
     char buf[21];
     
-    // 1줄차: 돈과 다이아몬드 표시
     sprintf(buf, "M:%d D:%d", (int)g_store.money, (int)g_store.diamonds);
     set_win_tiles(1, 1, 18, 1, buf);
     
-    // 2줄차: 평판과 현재 일차 표시
     sprintf(buf, "REP:%d W:%d D:%d", (int)g_store.reputation, (int)g_store.week, (int)g_store.day);
     set_win_tiles(1, 2, 18, 1, buf);
     
-    // 3줄차: 현재 커서 위치한 층 정보 표시
     sprintf(buf, "CUR: FLR %d", (int)(g_store.cur_cursor_floor + 1));
     set_win_tiles(1, 3, 18, 1, buf);
 }
@@ -272,7 +268,6 @@ void main(void) {
         if (system_timer % 600 == 0) if ((DIV_REG % 3) == 0) trigger_random_disaster();
         if (system_timer % 360 == 0) process_calendar_and_taxes();
         
-        // 매 프레임마다 하단 GUI 텍스트 업데이트!
         update_gui_display();
         
         sys_wait_vbl();
